@@ -12,10 +12,7 @@ def ScrapeURL(base_url, parameters):
     stats = response.json()['resultSets'][0]['rowSet']
     stats_df = pd.DataFrame(stats, columns=headers)
     stats_df['Season'] = parameters['Season']
-    # stats_df.drop(['CFID', 'CFPARAMS'], axis=1, inplace=True)
     return stats_df
-
-
 
 def LoadRatings():
  	data_frame = ScrapeURL(nba_site_constants.TEAM_STATS_URL, 
@@ -26,7 +23,6 @@ def LoadRatings():
  	defensive_rating = dict()
 
  	for index, row in data_frame.iterrows():
- 		print row
 		offensive_rating[row[nba_site_constants.TEAM_INDEX]] = row[nba_site_constants.OFFENSIVE_RATING_INDEX]
 		defensive_rating[row[nba_site_constants.TEAM_INDEX]] = row[nba_site_constants.DEFENSIVE_RATING_INDEX]
 

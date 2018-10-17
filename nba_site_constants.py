@@ -48,3 +48,36 @@ REQUEST_HEADERS = {
 TEAM_INDEX = 1
 OFFENSIVE_RATING_INDEX = 8
 DEFENSIVE_RATING_INDEX = 10
+
+TEAMS = [
+			"Boston Celtics",
+			"Brooklyn Nets",
+			"New York Knicks",
+			"Philadelphia 76ers",
+			"Toronto Raptors",
+			"Chicago Bulls",
+			"Cleveland Cavaliers",
+			"Detroit Pistons",
+			"Indiana Pacers",
+			"Milwaukee Bucks",
+			"Atlanta Hawks",
+			"Charlotte Hornets",
+			"Miami Heat",
+			"Orlando Magic",
+			"Washington Wizards",
+			"Denver Nuggets",
+			"Minnesota Timberwolves",
+			"Oklahoma City Thunder",
+			"Portland Trail Blazers",
+			"Utah Jazz",
+			"Golden State Warriors",
+			"LA Clippers",
+			"Los Angeles Lakers",
+			"Phoenix Suns",
+			"Sacramento Kings",
+			"Dallas Mavericks",
+			"Houston Rockets",
+			"Memphis Grizzlies",
+			"New Orleans Pelicans",
+			"San Antonio Spurs"
+		]
