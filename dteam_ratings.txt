@@ -1,0 +1,1 @@
+{"Oklahoma City Thunder": 104.9, "Boston Celtics": 82.1, "Golden State Warriors": 96.2, "Philadelphia 76ers": 100.0}
