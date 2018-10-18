@@ -147,3 +147,5 @@ TEAMID_MAP = {
 	"New Orleans Pelicans": 1610612740,
 	"San Antonio Spurs": 1610612759
 }
+
+WEEKS_PLAYED = 1

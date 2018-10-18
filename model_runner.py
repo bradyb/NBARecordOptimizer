@@ -1,5 +1,6 @@
 import itertools
 import json
+
 import nba_site_constants
 import rating_loader
 
@@ -14,15 +15,32 @@ def _LoadJSONFile(file_name):
 		data = json.load(file)
 	return data
 
+def _ScoreForWeek(team_name, week):
+	pass
+
+def _ComputePlanScore(permutation):
+	score = 0
+	for team_index, week in itertools.izip(permutation, 
+										   range(0, 24-nba_site_constants.WEEKS_PLAYED)):
+		score = score + _ScoreForWeek(nba_site_constants.TEAMS[team_index], week)
+	return score
+
 def FindOptimalPlan():
 	offensive_ratings = _LoadJSONFile(nba_site_constants.OFFENSIVE_TEAM_RATINGS_FILE)
 	defensive_ratings = _LoadJSONFile(nba_site_constants.DEFENSIVE_TEAM_RATINGS_FILE)
 
 	max_score = 0
-	permutation = None
+	opt_permutation = None
 
-	for team_index in itertools.permutations(range(0,30), 24):
-		pass
+	for permutation in itertools.permutations(range(0,len(nba_site_constants.TEAMS) - nba_site_constants.WEEKS_PLAYED), 
+													24 - nba_site_constants.WEEKS_PLAYED):
+		score = _ComputePlanScore(permutation)
+		if score > max_score:
+			max_score = score
+			opt_permutation = permutation
+
+	return permutation
+
 
 
 def FormatPlan(plan):
