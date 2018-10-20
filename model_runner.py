@@ -15,12 +15,21 @@ def _LoadJSONFile(file_name):
 		data = json.load(file)
 	return data
 
-def _ScoreForWeek(team_name, week):
-	pass
+def _ScoreForWeek(team_name, week, oratings, dratings):
+    opponents = []
+	# Get the teams that the team plays this week
+	# Count the number of back to backs?
+	expected_wins = 0
+	for opponent in opponents:
+	    expected_wins = expected_wins + _ProbAWinsVs(oratings[team_name],
+	                                                 dratings[team_name],
+	                                                 oratings[opponent],
+	                                                 dratings[opponent])
+    return expected_wins
 
 def _ComputePlanScore(permutation):
 	score = 0
-	for team_index, week in itertools.izip(permutation, 
+	for team_index, week in itertools.izip(permutation,
 										   range(0, 24-nba_site_constants.WEEKS_PLAYED)):
 		score = score + _ScoreForWeek(nba_site_constants.TEAMS[team_index], week)
 	return score
@@ -32,7 +41,7 @@ def FindOptimalPlan():
 	max_score = 0
 	opt_permutation = None
 
-	for permutation in itertools.permutations(range(0,len(nba_site_constants.TEAMS) - nba_site_constants.WEEKS_PLAYED), 
+	for permutation in itertools.permutations(range(0,len(nba_site_constants.TEAMS) - nba_site_constants.WEEKS_PLAYED),
 													24 - nba_site_constants.WEEKS_PLAYED):
 		score = _ComputePlanScore(permutation)
 		if score > max_score:
@@ -44,7 +53,8 @@ def FindOptimalPlan():
 
 
 def FormatPlan(plan):
-	pass
+    print nba_site_constants.TEAMS[plan[0]]
+
 
 def ComputeNextPick():
 	rating_loader.LoadRatings()
