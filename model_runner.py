@@ -36,17 +36,17 @@ def _ScoreForWeek(team_name, week, oratings, dratings):
 	                                                 dratings[opponent])
 	return expected_wins
 
-def _GetNextteam(week, off_ratings, def_ratings, current_plan):
+def _GetNextWeek(week, off_ratings, def_ratings):
 	week_expectation = dict()
-	best_team = None
-	best_wins = 0
-	best_losses = 0
 	for team in nba_site_constants.TEAMS
+		if team in nba_site_constants.PICKS:
+			continue
 		wins, losses, team = _TeamForWeek(nba_site_constants.TEAMS[team], 
 										  week, 
 										  off_ratings, 
 										  def_ratings)
-	return best_wins, best_losses, best_team
+		week_expectation[team] = (wins, losses)
+	return 
 
 def FindBestPlan():
 	offensive_ratings = _LoadJSONFile(nba_site_constants.
@@ -60,8 +60,7 @@ def FindBestPlan():
 
 	scores = _GetNextWeek(week, 
 						  offensive_ratings, 
-						  defensive_ratings, 
-						  current_plan)
+						  defensive_ratings)
 
 	return current_plan
 
