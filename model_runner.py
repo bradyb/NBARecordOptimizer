@@ -36,17 +36,28 @@ def _ScoreForWeek(team_name, week, oratings, dratings):
 	                                                 dratings[opponent])
 	return expected_wins
 
-def _GetNextWeek(week, off_ratings, def_ratings):
+def _GetNextWeek(week, off_ratings, def_ratings, picks):
 	week_expectation = dict()
 	for team in nba_site_constants.TEAMS
-		if team in nba_site_constants.PICKS:
+		if team in picks:
 			continue
 		wins, losses, team = _TeamForWeek(nba_site_constants.TEAMS[team], 
 										  week, 
 										  off_ratings, 
 										  def_ratings)
 		week_expectation[team] = (wins, losses)
-	return 
+	return week_expectation
+
+def _GetBestPlans(offensive_ratings, def_ratings, week,
+				 total_wins, total_losses, picks):
+	# Return Top 3 of Next Week
+	week_expectation = _GetNextWeek(week, off_ratings, def_ratings, picks)
+
+	if week < 24:
+		# Return the top 3 of these list
+	else:
+		# Return the best plans continuing the with top 3
+
 
 def FindBestPlan():
 	offensive_ratings = _LoadJSONFile(nba_site_constants.
@@ -55,14 +66,12 @@ def FindBestPlan():
 										DEFENSIVE_TEAM_RATINGS_FILE)
 
 	total_wins, total_losses = _GetCurrentScore()
-	next_team = None
-	current_plan = dict()
 
-	scores = _GetNextWeek(week, 
-						  offensive_ratings, 
-						  defensive_ratings)
+	plans = _GetBestPlans(offensive_ratings, def_ratings, 
+						nba_site_constants.WEEKS_PLAYED,
+						total_wins, total_losses, nba_site_constants.PICKS.copy())
 
-	return current_plan
+	return _BestPlan(plans)
 
 
 
