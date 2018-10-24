@@ -97,12 +97,8 @@ TEAMS = [
 ]
 
 PICKS = {
-	"Philadelphia 76ers": 0
+	"Philadelphia 76ers": {'week': 0, 'wins': 2, 'losses': 1}
 }
-
-PAST_SCORES = [
-	(2,1)
-]
 
 TEAMNAME_MAP = {
 	"ATL":	"Atlanta Hawks",
