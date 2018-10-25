@@ -29,8 +29,7 @@ class PlanFinder:
 		teams_opponents = dict()
 		for game in response.json()['games']:
 			self._UpdateOpponents(teams_opponents, game['hTeam']['teamId'], game['vTeam']['teamId'])
-		pp.pprint(teams_opponents)
-
+		return teams_opponents
 
 	def _ProbAWinsVsB(self, a_ortg, a_drtg, b_ortg, b_drtg):
 		a_win_pct = a_ortg**16.5/(a_ortg**16.5 + a_drtg**16.5)
@@ -45,16 +44,12 @@ class PlanFinder:
 			total_losses += pick_info['losses']
 		return total_wins, total_losses
 
-
-
 	def _LoadJSONFile(self, file_name):
 		with open(file_name) as file:
 			data = json.load(file)
 		return data
 
-	def _TeamScoreForWeek(self, team_name, week, oratings, dratings):
-		opponents = []
-		# Get the teams that the team plays this week
+	def _TeamScoreForWeek(self, team_name, opponents, oratings, dratings):
 		expected_wins = 0
 		for opponent in opponents:
 			expected_wins = expected_wins + _ProbAWinsVsB(oratings[team_name],
@@ -63,7 +58,15 @@ class PlanFinder:
 	    		dratings[opponent])
 		return expected_wins
 
+	def _GetWeekSchedule(self, week, weeks_list):
+		games_dict = dict()
+		for day in weeks_list[week]:
+			for team, opponents in self._GetSchedule(date):
+				games_dict[team].extend(opponents)
+
+
 	def _GetNextWeek(self, week, off_ratings, def_ratings, picks):
+		# Get Schedule for the week here
 		week_expectation = dict()
 		for team in nba_site_constants.TEAMS:
 			if team in picks:
