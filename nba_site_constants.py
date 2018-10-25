@@ -1,4 +1,5 @@
 TEAM_STATS_URL = 'http://stats.nba.com/stats/leaguedashteamstats?'
+PROD_URL = 'http://data.nba.net/10s/prod/v1/'
 
 TEAM_PARAMETERS = {
 	'Conference': '',
