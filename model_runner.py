@@ -12,7 +12,11 @@ class PlanFinder:
 	def _FormScheduleUrl(self, date):
 		return nba_site_constants.PROD_URL + str(date) + '/scoreboard.json'
 
-	def _UpdateOpponents(self, teams_opponents, hteam_id, vteam_id):
+        def _LoadDates():
+            with open('dates.txt', 'r') as dates_file:
+                return dates_file.readlines()
+
+        def _UpdateOpponents(self, teams_opponents, hteam_id, vteam_id):
 		if hteam_id in teams_opponents:
 			teams_opponents[hteam_id].append(vteam_id)
 		else:
