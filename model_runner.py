@@ -22,6 +22,8 @@ class PlanFinder:
 		self.defensive_ratings = self._LoadJSONFile(nba_site_constants.
 										DEFENSIVE_TEAM_RATINGS_FILE)
 		self.total_wins, self.total_losses = self._GetCurrentScore()
+		self.team_to_id = nba_site_constants.TEAM_TO_ID_MAP
+		self.id_to_team = nba_site_constants.ID_TO_TEAM_MAP
 
 	def _FormScheduleUrl(self, date):
 		return nba_site_constants.PROD_URL + date + '/scoreboard.json'
@@ -68,15 +70,16 @@ class PlanFinder:
 			data = json.load(file)
 		return data
 
-	def _TeamScoreForWeek(self, team_name, week):
+	def _TeamScoreForWeek(self, team_name, week, opponents):
 		expected_wins = 0
 		for opponent in opponents:
-			expected_wins = expected_wins + _ProbAWinsVsB(team_name, opponent)
+			opponent_name = self.id_to_team[opponent]
+			expected_wins = expected_wins + self._ProbAWinsVsB(team_name, opponent_name)
 		return expected_wins
 
 	def _GetWeekSchedule(self, week):
 		games_dict = dict()
-		for day in self.week_list[week]:
+		for day in self.week_list[week - 1]:
 			for team, opponents in self._GetSchedule(day).items():
 				if team in games_dict:
 					games_dict[team].extend(opponents)
@@ -87,12 +90,16 @@ class PlanFinder:
 
 	def _GetNextWeek(self, week, picks):
 		week_expectation = dict()
+		schedule = self._GetWeekSchedule(week)
+		pp.pprint(schedule)
 		for team in nba_site_constants.TEAMS:
 			if team in picks:
 				continue
-			wins, losses, team = self._TeamScoreForWeek(nba_site_constants.TEAMS[team], week)
+			print("evaluating team: ", team)
+			opponents = schedule[self.team_to_id[team]]
+			wins = self._TeamScoreForWeek(team, week, opponents)
 			week_expectation[team] = {'wins': wins,
-									  'losses': losses}
+									  'losses': len(opponents) - wins}
 		return week_expectation
 
 	def _GetBestPlans(self, week, picks):
