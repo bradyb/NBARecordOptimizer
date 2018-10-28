@@ -58,7 +58,7 @@ class PlanFinder:
 	def _GetCurrentScore(self):
 		total_wins = 0
 		total_losses = 0
-		for pick_info in nba_site_constants.PICKS.itervalues():
+		for pick_info in nba_site_constants.PICKS.values():
 			total_wins += pick_info['wins']
 			total_losses += pick_info['losses']
 		return total_wins, total_losses
@@ -77,8 +77,12 @@ class PlanFinder:
 	def _GetWeekSchedule(self, week):
 		games_dict = dict()
 		for day in self.week_list[week]:
-			for team, opponents in self._GetSchedule(date):
-				games_dict[team].extend(opponents)
+			for team, opponents in self._GetSchedule(day).items():
+				if team in games_dict:
+					games_dict[team].extend(opponents)
+				else:
+					games_dict[team] = opponents
+		return games_dict
 
 
 	def _GetNextWeek(self, week, picks):
@@ -86,8 +90,7 @@ class PlanFinder:
 		for team in nba_site_constants.TEAMS:
 			if team in picks:
 				continue
-			wins, losses, team = _TeamScoreForWeek(nba_site_constants.TEAMS[team], 
-											  week)
+			wins, losses, team = self._TeamScoreForWeek(nba_site_constants.TEAMS[team], week)
 			week_expectation[team] = {'wins': wins,
 									  'losses': losses}
 		return week_expectation
@@ -120,4 +123,4 @@ def ComputeNextPick():
 
 if __name__ == "__main__":
 	plan_finder = PlanFinder()
-	print(plan_finder._LoadDates())
+	pp.pprint(plan_finder._GetNextWeek(2, nba_site_constants.PICKS.copy()))
