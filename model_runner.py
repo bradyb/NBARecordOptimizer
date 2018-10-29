@@ -103,21 +103,31 @@ class PlanFinder:
 		return week_expectation
 
 	def _GetBestPlans(self, week, picks):
-		week_expectation = _GetNextWeek(week, picks)
-		total_games = total_wins + total_losses
-		#compare = lambda (key, value): (value['wins'] + total_wins) / (total_games + value['wins'] + value['losses'])
-		#sorted_week = sorted(week_expectation.iteritems(), key=compare, reverse=True)
-		#if week < 24:
-		#	return _BestPlan(_GetBestPlans(off_ratings, def_ratings, week + 1, total_wins))
-		#else:
-		#	return 
+		week_expectation = self._GetNextWeek(week, picks)
+		total_games = self.total_wins + self.total_losses
+
+		value_dict = dict() 
+		for team, scores in week_expectation.items():
+			week_value = (scores['wins'] + self.total_wins) / (total_games + scores['wins'] + scores['losses'])
+			value_dict[team] = week_value
+
+		sorted_week = sorted(value_dict.items(), key=lambda kv: kv[1], reverse=True)
+		if week < 24:
+			updated_picks = picks.copy()
+			next_team = sorted_week[0][0]
+			updated_picks[next_team] = {'week': week, 
+										'wins': week_expectation[next_team]['wins'], 
+										'losses': week_expectation[next_team]['losses']}
+			return self._GetBestPlans(week + 1, updated_picks)
+		else:
+			return sorted_week[0][0]
 
 
 	def FindBestPlan(self):
-		plans = self._GetBestPlans(nba_site_constants.WEEKS_PLAYED, 
+		plans = self._GetBestPlans(nba_site_constants.WEEKS_PLAYED + 1, 
 								   nba_site_constants.PICKS.copy())
 
-		return self._BestPlan(plans)
+		return plans
 
 
 
@@ -130,4 +140,4 @@ def ComputeNextPick():
 
 if __name__ == "__main__":
 	plan_finder = PlanFinder()
-	pp.pprint(plan_finder._GetNextWeek(2, nba_site_constants.PICKS.copy()))
+	pp.pprint(plan_finder.FindBestPlan())

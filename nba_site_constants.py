@@ -98,7 +98,8 @@ TEAMS = [
 ]
 
 PICKS = {
-	"Philadelphia 76ers": {'week': 0, 'wins': 2, 'losses': 1}
+	"Philadelphia 76ers": {'week': 0, 'wins': 2, 'losses': 1},
+	"Golden State Warriors": {'week': 1, 'wins': 4, 'losses': 0},
 }
 
 TEAMNAME_MAP = {
@@ -201,4 +202,4 @@ ID_TO_TEAM_MAP = {
 }
 
 
-WEEKS_PLAYED = 1
+WEEKS_PLAYED = 2
