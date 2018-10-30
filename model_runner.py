@@ -26,6 +26,7 @@ class PlanFinder:
 		self.id_to_team = nba_site_constants.ID_TO_TEAM_MAP
 		self.week_schedules = dict()
 		self.team_week_score = dict()
+		self.set_to_best = dict()
 
 	def _FormScheduleUrl(self, date):
 		return nba_site_constants.PROD_URL + date + '/scoreboard.json'
@@ -116,6 +117,10 @@ class PlanFinder:
 
 	def _GetBestPlans(self, week, picks):
 		print("Week: ", week)
+		remaining_teams_set = frozenset(self._GetRemainingTeams(picks))
+		if remaining_teams_set in self.set_to_best:
+			return self.set_to_best[remaining_teams_set]
+
 		week_expectation = self._GetNextWeek(week, picks)
 		total_games = self.total_wins + self.total_losses
 
@@ -127,7 +132,7 @@ class PlanFinder:
 		sorted_week = sorted(value_dict.items(), key=lambda kv: kv[1], reverse=True)
 		if week < 24:
 			top_plans = list()
-			for next_week in range(min(3, 24 - week)):
+			for next_week in range(min(5, 24 - week)):
 				updated_picks = picks.copy()
 				next_team = sorted_week[next_week][0]
 				updated_picks[next_team] = {'week': week, 
@@ -136,7 +141,9 @@ class PlanFinder:
 				print("Week: ", week)
 				print("Version: ", next_week)
 				top_plans.append(self._GetBestPlans(week + 1, updated_picks))
-			return self._BestPlan(top_plans)
+			best_plan = self._BestPlan(top_plans)
+			self.set_to_best[remaining_teams_set] = best_plan
+			return best_plan
 		else:
 			print("Reached base case, picking: ", sorted_week[0][0])
 			updated_picks = picks.copy()
@@ -154,7 +161,7 @@ class PlanFinder:
 
 			if score > best_score:
 				best_score = score
-				best_plan = picks
+				best_plan = picks.copy()
 
 		return best_plan
 
@@ -166,6 +173,9 @@ class PlanFinder:
 			total_games += scores['wins'] + scores['losses']
 
 		return (total_wins / total_games)
+
+	def _GetRemainingTeams(self, picks):
+		return [team for team in nba_site_constants.TEAMS if team not in picks]
 
 	def FindBestPlan(self):
 		plans = self._GetBestPlans(nba_site_constants.WEEKS_PLAYED + 1, 
