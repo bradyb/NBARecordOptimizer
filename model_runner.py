@@ -1,3 +1,4 @@
+import csv
 import itertools
 import json
 import pprint as pp
@@ -7,11 +8,13 @@ import nba_site_constants
 import rating_loader
 
 _DAYS_IN_WEEK = 7
+_MAX_WEEKS = 24
+_SEASON = '2019'
 
 class PlanFinder:
 
 	def __init__(self):
-		with open('dates.txt', 'r') as dates_file:
+		with open('dates-dash.txt', 'r') as dates_file:
 			day_list = dates_file.read().splitlines()
 		self.week_list = list()
 		for day in range(0, len(day_list), _DAYS_IN_WEEK):
@@ -27,9 +30,22 @@ class PlanFinder:
 		self.week_schedules = dict()
 		self.team_week_score = dict()
 		self.set_to_best = dict()
+		self.date_to_elo = dict()
+		self._Load538EloScores()
 
 	def _FormScheduleUrl(self, date):
-		return nba_site_constants.PROD_URL + date + '/scoreboard.json'
+		return nba_site_constants.PROD_URL + date.replace('-', '') + '/scoreboard.json'
+
+	def _Load538EloScores(self):
+		matched_row = None
+		with open("538_stats/nba_elo.csv", "r") as elo_csv:
+			reader = csv.reader(elo_csv, delimiter=',')
+			for row in reader:
+				if row[1] == _SEASON:
+					if row[0] in self.date_to_elo:
+						self.date_to_elo[row[0]].append(row)
+					else:
+						self.date_to_elo[row[0]] = [row]
 
 	def _UpdateOpponents(self, teams_opponents, hteam_id, vteam_id):
 		if hteam_id in teams_opponents:
@@ -88,6 +104,20 @@ class PlanFinder:
 			expected_wins = expected_wins + self._ProbAWinsVsB(team_name, opponent_name)
 		return expected_wins
 
+	def _TeamEloScoreForWeek(self, week, team_name):
+		team_abbrv = nba_site_constants.NAME_TO_ABBRV_MAP[team_name]
+		total_wins = 0.0
+		for day in self.week_list[week - 1]:
+			if day not in self.date_to_elo:
+				continue
+			week_games = self.date_to_elo[day]
+			for row in week_games:
+				if row[4] == team_abbrv:
+					total_wins += float(row[8])
+				elif row[5] == team_abbrv:
+					total_wins += float(row[9])
+		return total_wins
+
 	def _GetWeekSchedule(self, week):
 		if week in self.week_schedules:
 			return self.week_schedules[week]
@@ -110,13 +140,12 @@ class PlanFinder:
 			if team in picks:
 				continue
 			opponents = schedule[self.team_to_id[team]]
-			wins = self._TeamScoreForWeek(team, week, opponents)
+			wins = self._TeamEloScoreForWeek(week, team)
 			week_expectation[team] = {'wins': wins,
 									  'losses': len(opponents) - wins}
 		return week_expectation
 
 	def _GetBestPlans(self, week, picks):
-		print("Week: ", week)
 		remaining_teams_set = frozenset(self._GetRemainingTeams(picks))
 		if remaining_teams_set in self.set_to_best:
 			return self.set_to_best[remaining_teams_set]
@@ -132,20 +161,17 @@ class PlanFinder:
 		sorted_week = sorted(value_dict.items(), key=lambda kv: kv[1], reverse=True)
 		if week < 24:
 			top_plans = list()
-			for next_week in range(min(5, 24 - week)):
+			for next_week in range(min(3, 24 - week)):
 				updated_picks = picks.copy()
 				next_team = sorted_week[next_week][0]
 				updated_picks[next_team] = {'week': week, 
 											'wins': week_expectation[next_team]['wins'],
 											'losses': week_expectation[next_team]['losses']}
-				print("Week: ", week)
-				print("Version: ", next_week)
 				top_plans.append(self._GetBestPlans(week + 1, updated_picks))
 			best_plan = self._BestPlan(top_plans)
 			self.set_to_best[remaining_teams_set] = best_plan
 			return best_plan
 		else:
-			print("Reached base case, picking: ", sorted_week[0][0])
 			updated_picks = picks.copy()
 			next_team = sorted_week[0][0]
 			updated_picks[next_team] = {'week': week, 
@@ -197,3 +223,4 @@ if __name__ == "__main__":
 	best_plan = plan_finder.FindBestPlan() 
 	pp.pprint(best_plan)
 	print("Plan score: ", plan_finder._ComputePlanScore(best_plan))
+	pp.pprint([team for team in nba_site_constants.TEAMS if team not in best_plan])

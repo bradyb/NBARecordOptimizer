@@ -100,6 +100,7 @@ TEAMS = [
 PICKS = {
 	"Philadelphia 76ers": {'week': 0, 'wins': 2, 'losses': 1},
 	"Golden State Warriors": {'week': 1, 'wins': 4, 'losses': 0},
+	"LA Clippers": {'week': 2, 'wins': 1, 'losses': 2},
 }
 
 TEAMNAME_MAP = {
@@ -133,6 +134,39 @@ TEAMNAME_MAP = {
 	"TOR":	"Toronto Raptors",
 	"UTA":	"Utah Jazz",
 	"WAS":	"Washington Wizards",
+}
+
+NAME_TO_ABBRV_MAP = {
+	"Atlanta Hawks": "ATL",
+	"Brooklyn Nets": "BKN",
+	"Boston Celtics": "BOS",
+	"Charlotte Hornets": "CHA",
+	"Chicago Bulls": "CHI",
+	"Cleveland Cavaliers": "CLE",
+	"Dallas Mavericks": "DAL",
+	"Denver Nuggets": "DEN",
+	"Detroit Pistons": "DET",
+	"Golden State Warriors": "GSW",
+	"Houston Rockets": "HOU",
+	"Indiana Pacers": "IND",
+	"LA Clippers": "LAC",
+	"Los Angeles Lakers": "LAL",
+	"Memphis Grizzlies": "MEM",
+	"Miami Heat": "MIA",
+	"Milwaukee Bucks": "MIL",
+	"Minnesota Timberwolves": "MIN",
+	"New Orleans Pelicans": "NOP",
+	"New York Knicks": "NYK",
+	"Oklahoma City Thunder": "OKC",
+	"Orlando Magic": "ORL",
+	"Philadelphia 76ers": "PHI",
+	"Phoenix Suns": "PHX",
+	"Portland Trail Blazers": "POR",
+	"Sacramento Kings": "SAC",
+	"San Antonio Spurs": "SAS",
+	"Toronto Raptors": "TOR",
+	"Utah Jazz": "UTA",
+	"Washington Wizards": "WAS",
 }
 
 TEAM_TO_ID_MAP = {
@@ -202,4 +236,4 @@ ID_TO_TEAM_MAP = {
 }
 
 
-WEEKS_PLAYED = 2
+WEEKS_PLAYED = 3
