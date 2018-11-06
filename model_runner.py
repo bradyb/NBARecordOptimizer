@@ -10,6 +10,9 @@ import rating_loader
 _DAYS_IN_WEEK = 7
 _MAX_WEEKS = 24
 _SEASON = '2019'
+_BRANCH_SIZE = 3
+_CARMELO_PROB1 = 20
+_CARMELO_PROB2 = 21
 
 class PlanFinder:
 
@@ -20,23 +23,34 @@ class PlanFinder:
 		for day in range(0, len(day_list), _DAYS_IN_WEEK):
 			self.week_list.append(day_list[day:day + _DAYS_IN_WEEK])
 
+		# Unused since win percentages are being pulled from 538
 		self.offensive_ratings = self._LoadJSONFile(nba_site_constants.
 										OFFENSIVE_TEAM_RATINGS_FILE)
 		self.defensive_ratings = self._LoadJSONFile(nba_site_constants.
 										DEFENSIVE_TEAM_RATINGS_FILE)
+		# The number of wins and losses accrued through WEEKS_PLAYED
 		self.total_wins, self.total_losses = self._GetCurrentScore()
+		# Only needed for interacting with stats.nba.com
 		self.team_to_id = nba_site_constants.TEAM_TO_ID_MAP
 		self.id_to_team = nba_site_constants.ID_TO_TEAM_MAP
+		# This is only needed when using _TeamScoreForWeek
+		# TODO(bradyb): Create base class with children implementing
+		# the scoring function.
 		self.week_schedules = dict()
+		# Memoizing a team's expected score for a particular week.
 		self.team_week_score = dict()
+		# Used for memoizing branches we've aleady traversed.
 		self.set_to_best = dict()
+		# Map of dates to list of game objects from 538. 
 		self.date_to_elo = dict()
 		self._Load538EloScores()
+		pp.pprint(self.date_to_elo)
 
 	def _FormScheduleUrl(self, date):
 		return nba_site_constants.PROD_URL + date.replace('-', '') + '/scoreboard.json'
 
 	def _Load538EloScores(self):
+		"""Fills self.date_to_elo"""
 		matched_row = None
 		with open("538_stats/nba_elo.csv", "r") as elo_csv:
 			reader = csv.reader(elo_csv, delimiter=',')
@@ -48,6 +62,7 @@ class PlanFinder:
 						self.date_to_elo[row[0]] = [row]
 
 	def _UpdateOpponents(self, teams_opponents, hteam_id, vteam_id):
+		"""For a game, updates each team's opponent lists for that week."""
 		if hteam_id in teams_opponents:
 			teams_opponents[hteam_id].append(vteam_id)
 		else:
@@ -58,6 +73,7 @@ class PlanFinder:
 			teams_opponents[vteam_id] = [hteam_id]		
 
 	def _GetSchedule(self, date):
+		"""Returns a dict from team ids to lists of opponents."""
 		url = self._FormScheduleUrl(date)
 		response = requests.get(url)
 		response.raise_for_status()
@@ -90,6 +106,10 @@ class PlanFinder:
 		return data
 
 	def _TeamScoreForWeek(self, team_name, week, opponents):
+		"""Computes the expected number of wins for a team in a given week
+		using _ProbAWinsVsB to compute the probability of Team A beating
+		Team B.
+		"""
 		init_team = True
 		if team_name in self.team_week_score:
 			if week in self.team_week_score[team_name]:
@@ -102,23 +122,36 @@ class PlanFinder:
 		for opponent in opponents:
 			opponent_name = self.id_to_team[opponent]
 			expected_wins = expected_wins + self._ProbAWinsVsB(team_name, opponent_name)
+		self.team_week_score[team_name][week] = expected_wins
 		return expected_wins
 
 	def _TeamEloScoreForWeek(self, week, team_name):
+		"""Computes the expected number of wins for a team in a given week
+		using CARMELO win probability pulled from 
+		https://data.fivethirtyeight.com/. The data is stored locally in 
+		date_to_elo.
+		"""
 		team_abbrv = nba_site_constants.NAME_TO_ABBRV_MAP[team_name]
 		total_wins = 0.0
+		total_losses = 0.0
 		for day in self.week_list[week - 1]:
 			if day not in self.date_to_elo:
 				continue
-			week_games = self.date_to_elo[day]
-			for row in week_games:
-				if row[4] == team_abbrv:
-					total_wins += float(row[8])
-				elif row[5] == team_abbrv:
-					total_wins += float(row[9])
-		return total_wins
+			day_games = self.date_to_elo[day]
+			for game in day_games:
+				# If team_name is home or away.
+				if game[4] == team_abbrv:
+					total_wins += float(game[_CARMELO_PROB1])
+					total_losses += float(game[_CARMELO_PROB2])
+				elif game[5] == team_abbrv:
+					total_wins += float(game[_CARMELO_PROB2])
+					total_losses += float(game[_CARMELO_PROB1])
+		return total_wins, total_losses
 
 	def _GetWeekSchedule(self, week):
+		"""IP may have been throttled.
+		TODO(bradyb): test this.
+		"""
 		if week in self.week_schedules:
 			return self.week_schedules[week]
 
@@ -135,14 +168,15 @@ class PlanFinder:
 
 	def _GetNextWeek(self, week, picks):
 		week_expectation = dict()
-		schedule = self._GetWeekSchedule(week)
+		# Don't need if we're going to use 538 data
+		# schedule = self._GetWeekSchedule(week)
 		for team in nba_site_constants.TEAMS:
 			if team in picks:
 				continue
-			opponents = schedule[self.team_to_id[team]]
-			wins = self._TeamEloScoreForWeek(week, team)
+			# same reason as above
+			wins, losses = self._TeamEloScoreForWeek(week, team)
 			week_expectation[team] = {'wins': wins,
-									  'losses': len(opponents) - wins}
+									  'losses': losses}
 		return week_expectation
 
 	def _GetBestPlans(self, week, picks):
@@ -161,7 +195,7 @@ class PlanFinder:
 		sorted_week = sorted(value_dict.items(), key=lambda kv: kv[1], reverse=True)
 		if week < 24:
 			top_plans = list()
-			for next_week in range(min(3, 24 - week)):
+			for next_week in range(min(_BRANCH_SIZE, 24 - week)):
 				updated_picks = picks.copy()
 				next_team = sorted_week[next_week][0]
 				updated_picks[next_team] = {'week': week, 
@@ -213,10 +247,6 @@ class PlanFinder:
 
 	def FormatPlan(self, plan):
 		return sorted( ((value, key) for key, value in plan.items()), reverse=True)
-
-
-def ComputeNextPick():
-	rating_loader.LoadRatings()
 
 if __name__ == "__main__":
 	plan_finder = PlanFinder()

@@ -138,9 +138,9 @@ TEAMNAME_MAP = {
 
 NAME_TO_ABBRV_MAP = {
 	"Atlanta Hawks": "ATL",
-	"Brooklyn Nets": "BKN",
+	"Brooklyn Nets": "BRK",
 	"Boston Celtics": "BOS",
-	"Charlotte Hornets": "CHA",
+	"Charlotte Hornets": "CHO",
 	"Chicago Bulls": "CHI",
 	"Cleveland Cavaliers": "CLE",
 	"Dallas Mavericks": "DAL",
@@ -160,7 +160,7 @@ NAME_TO_ABBRV_MAP = {
 	"Oklahoma City Thunder": "OKC",
 	"Orlando Magic": "ORL",
 	"Philadelphia 76ers": "PHI",
-	"Phoenix Suns": "PHX",
+	"Phoenix Suns": "PHO",
 	"Portland Trail Blazers": "POR",
 	"Sacramento Kings": "SAC",
 	"San Antonio Spurs": "SAS",
