@@ -18,11 +18,12 @@ class FiveThirtyEightReader:
 		with open("538_stats/nba_elo.csv", "r") as elo_csv:
 			reader = csv.reader(elo_csv, delimiter=',')
 			for row in reader:
-				if row[1] == self._SEASON:
-					if row[0] in self.date_to_elo:
-						self.date_to_elo[row[0]].append(row)
-					else:
-						self.date_to_elo[row[0]] = [row]
+				if row[1] != self._SEASON:
+					continue
+				if row[0] in self.date_to_elo:
+					self.date_to_elo[row[0]].append(row)
+				else:
+					self.date_to_elo[row[0]] = [row]
 
 	def GetMap(self):
 		return self.date_to_elo
