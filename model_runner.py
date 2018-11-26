@@ -5,11 +5,10 @@ import requests
 
 import fivethirtyeight_reader as reader
 import nba_site_constants
-import rating_loader
 
 _DAYS_IN_WEEK = 7
 _MAX_WEEKS = 24
-_BRANCH_SIZE = 3
+_BRANCH_SIZE = 4
 _CARMELO_PROB1 = 20
 _CARMELO_PROB2 = 21
 
@@ -28,7 +27,7 @@ class PlanFinder:
 		self.team_week_score = dict()
 		# Used for memoizing branches we've aleady traversed.
 		self.set_to_best = dict()
-		# Map of dates to list of game objects from 538. 
+		# Map of dates to list of game objects from 538.
 		self.date_to_elo = reader.FiveThirtyEightReader().GetMap()
 
 	def _GetCurrentScore(self):
@@ -41,8 +40,8 @@ class PlanFinder:
 
 	def _TeamEloScoreForWeek(self, week, team_name):
 		"""Computes the expected number of wins for a team in a given week
-		using CARMELO win probability pulled from 
-		https://data.fivethirtyeight.com/. The data is stored locally in 
+		using CARMELO win probability pulled from
+		https://data.fivethirtyeight.com/. The data is stored locally in
 		date_to_elo.
 		"""
 		team_abbrv = nba_site_constants.NAME_TO_ABBRV_MAP[team_name]
@@ -83,7 +82,7 @@ class PlanFinder:
 		week_expectation = self._GetNextWeek(week, picks)
 		total_games = self.total_wins + self.total_losses
 
-		value_dict = dict() 
+		value_dict = dict()
 		for team, scores in week_expectation.items():
 			week_value = (scores['wins'] + self.total_wins) / (total_games + scores['wins'] + scores['losses'])
 			value_dict[team] = week_value
@@ -94,7 +93,7 @@ class PlanFinder:
 			for next_week in range(min(_BRANCH_SIZE, 24 - week)):
 				updated_picks = picks.copy()
 				next_team = sorted_week[next_week][0]
-				updated_picks[next_team] = {'week': week, 
+				updated_picks[next_team] = {'week': week,
 											'wins': week_expectation[next_team]['wins'],
 											'losses': week_expectation[next_team]['losses']}
 				top_plans.append(self._GetBestPlans(week + 1, updated_picks))
@@ -104,7 +103,7 @@ class PlanFinder:
 		else:
 			updated_picks = picks.copy()
 			next_team = sorted_week[0][0]
-			updated_picks[next_team] = {'week': week, 
+			updated_picks[next_team] = {'week': week,
 										'wins': week_expectation[next_team]['wins'],
 										'losses': week_expectation[next_team]['losses']}
 			return updated_picks
@@ -134,14 +133,14 @@ class PlanFinder:
 		return [team for team in nba_site_constants.TEAMS if team not in picks]
 
 	def FindBestPlan(self):
-		plans = self._GetBestPlans(nba_site_constants.WEEKS_PLAYED + 1, 
+		plans = self._GetBestPlans(nba_site_constants.WEEKS_PLAYED + 1,
 								   nba_site_constants.PICKS.copy())
 
 		return plans
 
 if __name__ == "__main__":
 	plan_finder = PlanFinder()
-	best_plan = plan_finder.FindBestPlan() 
+	best_plan = plan_finder.FindBestPlan()
 	pp.pprint(best_plan)
 	print("Plan score: ", plan_finder._ComputePlanScore(best_plan))
 	pp.pprint([team for team in nba_site_constants.TEAMS if team not in best_plan])

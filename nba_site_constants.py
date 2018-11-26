@@ -102,6 +102,8 @@ PICKS = {
 	"Golden State Warriors": {'week': 2, 'wins': 4, 'losses': 0},
 	"LA Clippers": {'week': 3, 'wins': 1, 'losses': 2},
 	"Utah Jazz": {'week': 4, 'wins': 2, 'losses': 1},
+	"Oklahoma City Thunder": {'week': 5, 'wins': 3, 'losses': 0},
+	"Toronto Raptors": {'week': 6, 'wins': 4, 'losses': 0},
 }
 
 TEAMNAME_MAP = {
@@ -237,4 +239,4 @@ ID_TO_TEAM_MAP = {
 }
 
 
-WEEKS_PLAYED = 4
+WEEKS_PLAYED = 6
