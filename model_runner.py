@@ -92,7 +92,8 @@ class PlanFinder:
 			top_plans = list()
 			for next_week in range(min(_BRANCH_SIZE, 24 - week)):
 				updated_picks = picks.copy()
-				next_team = sorted_week[next_week][0]
+				splits = (24 - week) / _BRANCH_SIZE
+				next_team = sorted_week[splits*next_week][0]
 				updated_picks[next_team] = {'week': week,
 											'wins': week_expectation[next_team]['wins'],
 											'losses': week_expectation[next_team]['losses']}
